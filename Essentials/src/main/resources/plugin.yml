@@ -159,6 +159,9 @@ commands:
     description: Take off, and soar!
     usage: /<command> [player] [on|off]
     aliases: [efly]
+  flytime:
+    description: Claim or toggle timed flight; administrators can add time.
+    usage: /<command> [<duration> [player]]
   fireball:
     description: Throw a fireball or other assorted projectiles.
     usage: /<command> [fireball|small|large|arrow|skull|egg|snowball|expbottle|dragon|splashpotion|lingeringpotion|trident] [speed]
@@ -818,6 +821,10 @@ permissions:
     description: Bearers of this permission will be put into fly mode if they log in while in the air
   essentials.fly.others:
     description: Allows access to the /fly command for other players
+  essentials.flytime:
+    description: Allows access to /flytime to claim or toggle timed flight.
+  essentials.flytime.others:
+    description: Allows adding /flytime duration to yourself or other players.
   essentials.gamemode:
     description: Allows access to the /gamemode command
   essentials.gamemode.all:

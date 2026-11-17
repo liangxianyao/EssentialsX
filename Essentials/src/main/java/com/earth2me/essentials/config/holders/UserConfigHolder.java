@@ -424,6 +424,36 @@ public class UserConfigHolder {
             this.onlinejail = value;
         }
 
+        private long timedflight = 0L;
+
+        public long timedFlight() {
+            return this.timedflight;
+        }
+
+        public void timedFlight(final long value) {
+            this.timedflight = value;
+        }
+
+        private long timedflightpaused = 0L;
+
+        public long timedFlightPaused() {
+            return this.timedflightpaused;
+        }
+
+        public void timedFlightPaused(final long value) {
+            this.timedflightpaused = value;
+        }
+
+        private boolean timedflightclaimed = false;
+
+        public boolean timedFlightClaimed() {
+            return this.timedflightclaimed;
+        }
+
+        public void timedFlightClaimed(final boolean value) {
+            this.timedflightclaimed = value;
+        }
+
         private long logout = 0L;
 
         public long logout() {

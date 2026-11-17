@@ -528,6 +528,12 @@ public class EssentialsPlayerListener implements Listener {
             }
         }
 
+        user.checkTimedFlightExpiry();
+        if (user.hasTimedFlight()) {
+            user.getBase().setFallDistance(0f);
+            user.getBase().setAllowFlight(true);
+        }
+
         if (!user.isAuthorized("essentials.speed")) {
             user.getBase().setFlySpeed(0.1f);
             user.getBase().setWalkSpeed(0.2f);
@@ -742,7 +748,7 @@ public class EssentialsPlayerListener implements Listener {
         // Mitigation for https://github.com/EssentialsX/Essentials/issues/4325
         final TickCountProvider tickCountProvider = ess.provider(TickCountProvider.class);
         if (tickCountProvider != null && ess.getSettings().isWorldChangePreserveFlying() && VersionUtil.getServerBukkitVersion().isHigherThanOrEqualTo(VersionUtil.v1_17_R01)) {
-            if (user.isAuthorized("essentials.fly")) {
+            if (user.isAuthorized("essentials.fly") || user.hasTimedFlight()) {
                 //noinspection DataFlowIssue - not real
                 if (event.getFrom().getWorld() != event.getTo().getWorld() && player.getAllowFlight()) {
                     // If the player is not flying but has the ability to fly, we set the sign of the tick count to -1
@@ -909,7 +915,7 @@ public class EssentialsPlayerListener implements Listener {
         if (ess.getSettings().isWorldChangeFlyResetEnabled()) {
             if (user.getBase().getGameMode() != GameMode.CREATIVE
                 && user.getBase().getGameMode() != GameMode.SPECTATOR
-                && !user.isAuthorized("essentials.fly")) {
+                && !user.isAuthorized("essentials.fly") && !user.hasTimedFlight()) {
                 user.getBase().setFallDistance(0f);
                 user.getBase().setAllowFlight(false);
             }
@@ -934,7 +940,8 @@ public class EssentialsPlayerListener implements Listener {
 
         final TickCountProvider tickCountProvider = ess.provider(TickCountProvider.class);
         final int flightTick = user.getFlightTick();
-        if (tickCountProvider != null && Math.abs(flightTick) == tickCountProvider.getTickCount() && user.isAuthorized("essentials.fly")) {
+        if (tickCountProvider != null && Math.abs(flightTick) == tickCountProvider.getTickCount()
+            && (user.isAuthorized("essentials.fly") || user.hasTimedFlight())) {
             user.getBase().setAllowFlight(true);
             if (flightTick > 0) {
                 user.getBase().setFlying(true);

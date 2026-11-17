@@ -45,7 +45,7 @@ public class Commandhome extends EssentialsCommand {
                 if (!user.isAuthorized("essentials.home.bed")) {
                     throw new TranslatableException("noAccessCommand");
                 }
-                if (!player.getBase().isOnline() || player.getBase() instanceof OfflinePlayerStub) {
+                if (!player.getBase().isOnline() || OfflinePlayerStub.isStub(player.getBase())) {
                     throw new TranslatableException("bedOffline");
                 }
                 PaperLib.getBedSpawnLocationAsync(player.getBase(), true).thenAccept(location -> {
@@ -109,7 +109,7 @@ public class Commandhome extends EssentialsCommand {
                     user.sendTl("homes", AdventureUtil.parsed(StringUtil.joinList(homes)), count, getHomeLimit(finalPlayer));
                 }
             });
-            if (!player.getBase().isOnline() || player.getBase() instanceof OfflinePlayerStub) {
+            if (!player.getBase().isOnline() || OfflinePlayerStub.isStub(player.getBase())) {
                 message.complete(null);
                 return;
             }

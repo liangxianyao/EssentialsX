@@ -28,12 +28,6 @@ dependencies {
     api(project(':providers:NMSReflectionProvider')) {
         exclude(module: 'bukkit')
     }
-    api(project(':providers:1_8Provider')) {
-        exclude(module: 'spigot-api')
-    }
-    api(project(':providers:1_12Provider')) {
-        exclude(module: 'bukkit')
-    }
 }
 
 test {
@@ -74,8 +68,6 @@ shadowJar {
         include (project(':providers:BaseProviders'))
         include (project(path: ':providers:PaperProvider', configuration: 'shadow'))
         include (project(':providers:NMSReflectionProvider'))
-        include (project(':providers:1_8Provider'))
-        include (project(':providers:1_12Provider'))
 
         // Paper in-dev adventure versions (for snapshot/pre-releases)
         include (dependency('io.papermc.adventure:adventure-api'))

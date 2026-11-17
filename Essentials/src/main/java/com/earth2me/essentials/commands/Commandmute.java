@@ -31,7 +31,7 @@ public class Commandmute extends EssentialsCommand {
             user = getPlayer(server, args, 0, true, true);
         } catch (final PlayerNotFoundException e) {
             nomatch = true;
-            user = ess.getUser(new OfflinePlayerStub(args[0], ess.getServer()));
+            user = ess.getUser(OfflinePlayerStub.create(args[0], ess.getServer()));
         }
 
         if (isUnmute && !user.getMuted()) {

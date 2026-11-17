@@ -19,6 +19,7 @@ import net.ess3.api.IEssentials;
 import net.ess3.api.MaxMoneyException;
 import net.ess3.api.TranslatableException;
 import net.ess3.api.events.AfkStatusChangeEvent;
+import net.ess3.api.events.FlyStatusChangeEvent;
 import net.ess3.api.events.JailStatusChangeEvent;
 import net.ess3.api.events.MuteStatusChangeEvent;
 import net.ess3.api.events.UserBalanceUpdateEvent;
@@ -26,6 +27,7 @@ import net.ess3.provider.PlayerLocaleProvider;
 import net.essentialsx.api.v2.events.PreTransactionEvent;
 import net.essentialsx.api.v2.events.TransactionEvent;
 import net.essentialsx.api.v2.services.mail.MailSender;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Statistic;
@@ -182,7 +184,7 @@ public class User extends UserData implements Comparable<User>, IMessageRecipien
     }
 
     private boolean isAuthorizedCheck(final String node) {
-        if (base instanceof OfflinePlayerStub) {
+        if (OfflinePlayerStub.isStub(base)) {
             return false;
         }
 
@@ -200,7 +202,7 @@ public class User extends UserData implements Comparable<User>, IMessageRecipien
     }
 
     private boolean isAuthorizedCachedCheck(final String node) {
-        if (base instanceof OfflinePlayerStub) {
+        if (OfflinePlayerStub.isStub(base)) {
             return false;
         }
 
@@ -218,7 +220,7 @@ public class User extends UserData implements Comparable<User>, IMessageRecipien
     }
 
     private boolean isPermSetCheck(final String node) {
-        if (base instanceof OfflinePlayerStub) {
+        if (OfflinePlayerStub.isStub(base)) {
             return false;
         }
 
@@ -236,7 +238,7 @@ public class User extends UserData implements Comparable<User>, IMessageRecipien
     }
 
     private TriState isAuthorizedExactCheck(final String node) {
-        if (base instanceof OfflinePlayerStub) {
+        if (OfflinePlayerStub.isStub(base)) {
             return TriState.UNSET;
         }
 
@@ -367,7 +369,7 @@ public class User extends UserData implements Comparable<User>, IMessageRecipien
 
     private void _dispose() {
         if (!base.isOnline()) {
-            this.base = new OfflinePlayerStub(getConfigUUID(), ess.getServer());
+            this.base = OfflinePlayerStub.create(getConfigUUID(), ess.getServer());
         }
         cleanup();
     }
@@ -724,7 +726,7 @@ public class User extends UserData implements Comparable<User>, IMessageRecipien
 
     @Override
     public boolean isHiddenFrom(Player player) {
-        if (getBase() instanceof OfflinePlayerStub || player instanceof OfflinePlayerStub) {
+        if (OfflinePlayerStub.isStub(getBase()) || OfflinePlayerStub.isStub(player)) {
             return true;
         }
         return !player.canSee(getBase());
@@ -764,6 +766,76 @@ public class User extends UserData implements Comparable<User>, IMessageRecipien
 
     private long getOnlineJailExpireTime() {
         return ((getOnlineJailedTime() - getBase().getStatistic(PLAY_ONE_TICK)) * 50) + System.currentTimeMillis();
+    }
+
+    public long getRemainingTimedFlightTicks() {
+        final long endTick = getTimedFlightEndTick();
+        if (endTick <= 0 || !getBase().isOnline()) {
+            return 0;
+        }
+        return Math.max(0L, endTick - (long) getBase().getStatistic(PLAY_ONE_TICK));
+    }
+
+    public boolean hasTimedFlight() {
+        return getRemainingTimedFlightTicks() > 0;
+    }
+
+    public long calculateTimedFlightEndTick(final long durationTicks) {
+        if (durationTicks <= 0 || !getBase().isOnline()) {
+            throw new IllegalArgumentException("Timed flight requires an online player and positive duration");
+        }
+        final long currentTicks = getBase().getStatistic(PLAY_ONE_TICK);
+        final long endTick = Math.addExact(Math.max(currentTicks, getTimedFlightEndTick()), durationTicks);
+        if (endTick > Integer.MAX_VALUE) {
+            throw new ArithmeticException("Timed flight exceeds the supported player statistic range");
+        }
+        return endTick;
+    }
+
+    public void clearTimedFlight() {
+        if (getTimedFlightEndTick() != 0 || getPausedTimedFlightTicks() != 0) {
+            setTimedFlightState(0, 0);
+        }
+    }
+
+    public void pauseTimedFlight() {
+        final long remainingTicks = getRemainingTimedFlightTicks();
+        if (remainingTicks <= 0) {
+            throw new IllegalStateException("No active timed flight to pause");
+        }
+        setTimedFlightState(0, remainingTicks);
+    }
+
+    public void resumeTimedFlight() {
+        final long pausedTicks = getPausedTimedFlightTicks();
+        if (pausedTicks <= 0) {
+            throw new IllegalStateException("No paused timed flight to resume");
+        }
+        setTimedFlightState(calculateTimedFlightEndTick(pausedTicks), 0);
+    }
+
+    public boolean checkTimedFlightExpiry() {
+        if (getTimedFlightEndTick() <= 0 || !getBase().isOnline() || hasTimedFlight()) {
+            return false;
+        }
+        if (isAuthorized("essentials.fly") || getBase().getGameMode() == GameMode.CREATIVE || getBase().getGameMode() == GameMode.SPECTATOR) {
+            clearTimedFlight();
+            sendTl("flytimeExpired");
+            return true;
+        }
+        final FlyStatusChangeEvent event = new FlyStatusChangeEvent(this, null, false);
+        ess.getServer().getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            return false;
+        }
+        clearTimedFlight();
+        getBase().setFallDistance(0f);
+        if (getBase().getGameMode() != GameMode.CREATIVE && getBase().getGameMode() != GameMode.SPECTATOR) {
+            getBase().setFlying(false);
+            getBase().setAllowFlight(false);
+        }
+        sendTl("flytimeExpired");
+        return true;
     }
 
     //Returns true if status expired during this check

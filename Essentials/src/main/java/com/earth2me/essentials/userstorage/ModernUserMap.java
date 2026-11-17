@@ -119,11 +119,11 @@ public class ModernUserMap extends CacheLoader<UUID, User> implements IUserMap {
         }
 
         final User user = getUser(uuidCache.getCachedUUID(name));
-        if (user != null && user.getBase() instanceof OfflinePlayerStub) {
+        if (user != null && OfflinePlayerStub.isStub(user.getBase())) {
             if (user.getLastAccountName() != null) {
-                ((OfflinePlayerStub) user.getBase()).setName(user.getLastAccountName());
+                OfflinePlayerStub.setName(user.getBase(), user.getLastAccountName());
             } else {
-                ((OfflinePlayerStub) user.getBase()).setName(name);
+                OfflinePlayerStub.setName(user.getBase(), name);
             }
         }
         return user;
@@ -187,10 +187,10 @@ public class ModernUserMap extends CacheLoader<UUID, User> implements IUserMap {
 
         final File userFile = getUserFile(uuid);
         if (userFile.exists()) {
-            player = new OfflinePlayerStub(uuid, ess.getServer());
+            player = OfflinePlayerStub.create(uuid, ess.getServer());
             user = new User(player, ess);
             final String accName = user.getLastAccountName();
-            ((OfflinePlayerStub) player).setName(accName);
+            OfflinePlayerStub.setName(player, accName);
             // Check to see if there is already a UUID mapping for the name in the name cache before updating it.
             // Since this code is ran for offline players, there's a chance we could be overriding the mapping
             // for a player who changed their name to an older player's name, let that be handled during join.

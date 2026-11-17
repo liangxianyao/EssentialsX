@@ -1,5 +1,14 @@
 dependencyResolutionManagement {
     repositories {
+        mavenLocal {
+            content {
+                includeGroup("io.papermc.paper")
+                includeGroup("net.kyori")
+            }
+        }
+        mavenCentral {
+            content { includeGroup("net.kyori") }
+        }
         maven("https://repo.papermc.io/repository/maven-public/")
         maven("https://hub.spigotmc.org/nexus/content/groups/public/") {
             content {
@@ -51,5 +60,3 @@ sequenceOf(
 include(":providers:BaseProviders")
 include(":providers:NMSReflectionProvider")
 include(":providers:PaperProvider")
-include(":providers:1_8Provider")
-include(":providers:1_12Provider")

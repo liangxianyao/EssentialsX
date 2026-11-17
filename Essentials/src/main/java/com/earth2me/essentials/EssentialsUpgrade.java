@@ -29,6 +29,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.DigestInputStream;
@@ -716,7 +717,19 @@ public class EssentialsUpgrade {
         final File bukkitDirectory = ess.getDataFolder().getParentFile().getParentFile();
         final File worldDirectory = new File(bukkitDirectory, name);
         if (worldDirectory.exists() && worldDirectory.isDirectory()) {
-            return new FakeWorld(worldDirectory.getName(), World.Environment.NORMAL);
+            final String worldName = worldDirectory.getName();
+            final UUID worldId = UUID.randomUUID();
+            return (World) Proxy.newProxyInstance(World.class.getClassLoader(), new Class<?>[]{World.class}, (proxy, method, args) -> {
+                switch (method.getName()) {
+                    case "getName": return worldName;
+                    case "getUID": return worldId;
+                    case "getEnvironment": return World.Environment.NORMAL;
+                    case "toString": return worldName;
+                    case "hashCode": return System.identityHashCode(proxy);
+                    case "equals": return proxy == args[0];
+                    default: throw new UnsupportedOperationException("Unloaded world: " + worldName);
+                }
+            });
         }
         return null;
     }

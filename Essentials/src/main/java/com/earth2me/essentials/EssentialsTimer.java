@@ -96,6 +96,11 @@ public class EssentialsTimer implements Runnable {
             }
             user.checkMuteTimeout(currentTime);
             user.checkJailTimeout(currentTime);
+            try {
+                user.checkTimedFlightExpiry();
+            } catch (final Exception ex) {
+                ess.getLogger().log(Level.WARNING, "Timed flight expiry check failed for " + user.getName(), ex);
+            }
             user.resetInvulnerabilityAfterTeleport();
         }
     }

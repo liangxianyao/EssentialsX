@@ -40,8 +40,8 @@ public class UserMap {
         if (player instanceof Player) {
             userPlayer = (Player) player;
         } else {
-            final OfflinePlayerStub essPlayer = new OfflinePlayerStub(player.getUniqueId(), Bukkit.getServer());
-            essPlayer.setName(player.getName());
+            final Player essPlayer = OfflinePlayerStub.create(player.getUniqueId(), Bukkit.getServer());
+            OfflinePlayerStub.setName(essPlayer, player.getName());
             userPlayer = essPlayer;
         }
 

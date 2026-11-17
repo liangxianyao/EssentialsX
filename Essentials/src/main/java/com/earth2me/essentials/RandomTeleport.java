@@ -7,10 +7,10 @@ import com.earth2me.essentials.utils.LocationUtil;
 import com.earth2me.essentials.utils.VersionUtil;
 import io.papermc.lib.PaperLib;
 import net.ess3.provider.BiomeKeyProvider;
-import net.ess3.provider.BiomeNameProvider;
 import net.ess3.provider.WorldInfoProvider;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 
 import java.io.File;
@@ -245,27 +245,15 @@ public class RandomTeleport implements IConf {
 
     // Exclude biome if enum or namespaced key matches
     private boolean isExcludedBiome(final Location location) {
-        final BiomeNameProvider biomeNameProvider = ess.provider(BiomeNameProvider.class);
         final Set<String> excluded = getExcludedBiomes();
-        final String enumKey = biomeNameProvider.getBiomeName(location.getBlock());
-        // Try with good old bukkit enum
-        if (excluded.contains(enumKey)) {
-            return true;
-        }
-        if (VersionUtil.getServerBukkitVersion().isLowerThan(VersionUtil.v1_14_4_R01)) {
-            // No way to get the biome key on versions below this
-            return false;
-        }
-        final String biomeKey;
         final BiomeKeyProvider biomeKeyProvider = ess.provider(BiomeKeyProvider.class);
+        final NamespacedKey biomeKey;
         if (biomeKeyProvider != null) {
-            // Works with custom biome keys
-            biomeKey = biomeKeyProvider.getBiomeKey(location.getBlock()).toString();
+            biomeKey = biomeKeyProvider.getBiomeKey(location.getBlock());
         } else {
-            // Custom biome keys resolve as "minecraft:custom" which is unfortunate
-            biomeKey = location.getBlock().getBiome().getKey().toString();
+            biomeKey = location.getBlock().getBiome().getKey();
         }
-        return excluded.contains(biomeKey);
+        return excluded.contains(biomeKey.getKey()) || excluded.contains(biomeKey.toString());
     }
 
     private String locationKey(final String name, final String key) {

@@ -9,6 +9,7 @@ import com.earth2me.essentials.signs.EssentialsSign;
 import com.earth2me.essentials.signs.Signs;
 import com.earth2me.essentials.textreader.IText;
 import com.earth2me.essentials.textreader.SimpleTextInput;
+import com.earth2me.essentials.utils.DateUtil;
 import com.earth2me.essentials.utils.EnumUtil;
 import com.earth2me.essentials.utils.FormatUtil;
 import com.earth2me.essentials.utils.LocationUtil;
@@ -156,6 +157,7 @@ public class Settings implements net.ess3.api.ISettings {
     private Set<String> multiplierPerms;
     private BigDecimal defaultMultiplier;
     private List<String> afkTimeoutCommands = Collections.emptyList();
+    private Map<String, Long> flytimePermissionDurations = Collections.emptyMap();
 
     public Settings(final IEssentials ess) {
         this.ess = ess;
@@ -220,6 +222,35 @@ public class Settings implements net.ess3.api.ISettings {
     @Override
     public int getHomeLimit(final String set) {
         return config.getInt("sethome-multiple." + set, config.getInt("sethome-multiple.default", 3));
+    }
+
+    public long getFlytimePermissionDurationTicks(final User user) {
+        if (user == null) {
+            return 0L;
+        }
+        long longest = 0L;
+        for (final Map.Entry<String, Long> entry : flytimePermissionDurations.entrySet()) {
+            if (entry.getValue() > longest && user.isAuthorized("essentials.flytime.duration." + entry.getKey())) {
+                longest = entry.getValue();
+            }
+        }
+        return longest;
+    }
+
+    private Map<String, Long> _getFlytimePermissionDurations() {
+        final Map<String, Long> durations = new LinkedHashMap<>();
+        for (final Map.Entry<String, String> entry : config.getStringMap("flytime-permission-durations").entrySet()) {
+            try {
+                final long ticks = DateUtil.parseOnlineDurationTicks(entry.getValue());
+                if (ticks > Integer.MAX_VALUE) {
+                    throw new ArithmeticException("Online duration exceeds player statistic range");
+                }
+                durations.put(entry.getKey(), ticks);
+            } catch (final IllegalArgumentException | ArithmeticException ex) {
+                ess.getLogger().log(Level.WARNING, "Ignoring invalid flytime-permission-durations." + entry.getKey() + ": " + entry.getValue());
+            }
+        }
+        return Collections.unmodifiableMap(durations);
     }
 
     private int _getChatRadius() {
@@ -954,6 +985,7 @@ public class Settings implements net.ess3.api.ISettings {
         multiplierPerms = _getMultiplierPerms();
         defaultMultiplier = _getDefaultMultiplier();
         afkTimeoutCommands = _getAfkTimeoutCommands();
+        flytimePermissionDurations = _getFlytimePermissionDurations();
 
         reloadCount.incrementAndGet();
     }

@@ -31,6 +31,7 @@ public class Commandfly extends EssentialsToggleCommand {
         ess.getServer().getPluginManager().callEvent(event);
 
         if (!event.isCancelled()) {
+            user.clearTimedFlight();
             user.getBase().setFallDistance(0f);
             user.getBase().setAllowFlight(enabled);
 

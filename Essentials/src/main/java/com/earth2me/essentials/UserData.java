@@ -546,6 +546,36 @@ public abstract class UserData extends PlayerExtension implements IConf {
         config.save();
     }
 
+    public long getTimedFlightEndTick() {
+        return holder.timestamps().timedFlight();
+    }
+
+    public void setTimedFlightEndTick(final long tick) {
+        holder.timestamps().timedFlight(tick);
+        config.save();
+    }
+
+    public long getPausedTimedFlightTicks() {
+        return holder.timestamps().timedFlightPaused();
+    }
+
+    public boolean hasClaimedTimedFlightAllowance() {
+        return holder.timestamps().timedFlightClaimed();
+    }
+
+    public void setTimedFlightState(final long endTick, final long pausedTicks) {
+        setTimedFlightState(endTick, pausedTicks, false);
+    }
+
+    public void setTimedFlightState(final long endTick, final long pausedTicks, final boolean claimAllowance) {
+        holder.timestamps().timedFlight(endTick);
+        holder.timestamps().timedFlightPaused(pausedTicks);
+        if (claimAllowance) {
+            holder.timestamps().timedFlightClaimed(true);
+        }
+        config.save();
+    }
+
     public long getLastLogin() {
         return holder.timestamps().login();
     }

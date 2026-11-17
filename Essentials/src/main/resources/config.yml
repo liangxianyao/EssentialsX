@@ -239,6 +239,15 @@ world-change-fly-reset: true
 # This will only work if the player has the 'essentials.fly' permission.
 world-change-preserve-flying: true
 
+# Fixed, one-time flight allowance granted when a player first uses /flytime.
+# Give the group essentials.flytime and essentials.flytime.duration.<rank>.
+# If a player has multiple ranks, the longest valid duration is used.
+# A claimed allowance is never automatically granted again, including after expiry or restart.
+# Durations accept one number followed by s, m, h, d or w. Online enabled time only is counted.
+flytime-permission-durations:
+  basic: 10m
+  vip: 1h
+
 # Should Essentials preserve a player's flight status when they change game modes?
 # When enabled, if a player is flying when switching game modes, their flight will be maintained.
 # This will only work if the player has the 'essentials.fly' permission.

@@ -77,13 +77,6 @@ import net.ess3.provider.providers.BukkitSpawnerBlockProvider;
 import net.ess3.provider.providers.BukkitTileEntityProvider;
 import net.ess3.provider.providers.FixedHeightWorldInfoProvider;
 import net.ess3.provider.providers.FlatSpawnEggProvider;
-import net.ess3.provider.providers.LegacyBannerDataProvider;
-import net.ess3.provider.providers.LegacyBiomeNameProvider;
-import net.ess3.provider.providers.LegacyDamageEventProvider;
-import net.ess3.provider.providers.LegacyInventoryViewProvider;
-import net.ess3.provider.providers.LegacyItemUnbreakableProvider;
-import net.ess3.provider.providers.LegacyPlayerLocaleProvider;
-import net.ess3.provider.providers.LegacyPotionMetaProvider;
 import net.ess3.provider.providers.LegacySpawnEggProvider;
 import net.ess3.provider.providers.ModernDamageEventProvider;
 import net.ess3.provider.providers.ModernDataWorldInfoProvider;
@@ -102,7 +95,6 @@ import net.ess3.provider.providers.PaperSerializationProvider;
 import net.ess3.provider.providers.PaperServerStateProvider;
 import net.ess3.provider.providers.PaperTickCountProvider;
 import net.ess3.provider.providers.PaperTileEntityProvider;
-import net.ess3.provider.providers.PrehistoricPotionMetaProvider;
 import net.essentialsx.api.v2.services.BalanceTop;
 import net.essentialsx.api.v2.services.mail.MailService;
 import org.bukkit.Bukkit;
@@ -337,10 +329,10 @@ public class Essentials extends JavaPlugin implements net.ess3.api.IEssentials {
             providerFactory.registerProvider(LegacySpawnEggProvider.class, ReflSpawnEggProvider.class, FlatSpawnEggProvider.class);
 
             //Potion Meta Provider
-            providerFactory.registerProvider(PrehistoricPotionMetaProvider.class, LegacyPotionMetaProvider.class, ModernPotionMetaProvider.class);
+            providerFactory.registerProvider(ModernPotionMetaProvider.class);
 
             //Banner Meta Provider
-            providerFactory.registerProvider(LegacyBannerDataProvider.class, BaseBannerDataProvider.class);
+            providerFactory.registerProvider(BaseBannerDataProvider.class);
 
             // Server State Provider
             providerFactory.registerProvider(ReflServerStateProvider.class, PaperServerStateProvider.class);
@@ -370,7 +362,7 @@ public class Essentials extends JavaPlugin implements net.ess3.api.IEssentials {
             providerFactory.registerProvider(ReflOnlineModeProvider.class);
 
             // Unbreakable Provider
-            providerFactory.registerProvider(LegacyItemUnbreakableProvider.class, ModernItemUnbreakableProvider.class);
+            providerFactory.registerProvider(ModernItemUnbreakableProvider.class);
 
             // World Info Provider
             providerFactory.registerProvider(FixedHeightWorldInfoProvider.class, ReflDataWorldInfoProvider.class, ModernDataWorldInfoProvider.class);
@@ -379,16 +371,13 @@ public class Essentials extends JavaPlugin implements net.ess3.api.IEssentials {
             providerFactory.registerProvider(ModernSignDataProvider.class);
 
             // Player Locale Provider
-            providerFactory.registerProvider(ModernPlayerLocaleProvider.class, LegacyPlayerLocaleProvider.class);
+            providerFactory.registerProvider(ModernPlayerLocaleProvider.class);
 
             // Damage Event Provider
-            providerFactory.registerProvider(ModernDamageEventProvider.class, LegacyDamageEventProvider.class);
+            providerFactory.registerProvider(ModernDamageEventProvider.class);
 
             // Inventory View Provider
-            providerFactory.registerProvider(LegacyInventoryViewProvider.class, BaseInventoryViewProvider.class);
-
-            // Biome Name Provider
-            providerFactory.registerProvider(LegacyBiomeNameProvider.class);
+            providerFactory.registerProvider(BaseInventoryViewProvider.class);
 
             // Biome Key Provider
             providerFactory.registerProvider(PaperBiomeKeyProvider.class);
@@ -1103,9 +1092,7 @@ public class Essentials extends JavaPlugin implements net.ess3.api.IEssentials {
 
         final User user = userMap.getUser(base);
 
-        if (base.getClass() != UUIDPlayer.class || user.getBase() == null) {
-            user.update(base);
-        }
+        user.update(base);
         return user;
     }
 

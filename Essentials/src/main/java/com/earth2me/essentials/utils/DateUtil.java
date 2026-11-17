@@ -6,6 +6,7 @@ import net.ess3.api.TranslatableException;
 import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,9 +14,35 @@ import static com.earth2me.essentials.I18n.tlLiteral;
 
 public final class DateUtil {
     private static final Pattern timePattern = Pattern.compile("(?:([0-9]+)\\s*y[a-z]*[,\\s]*)?" + "(?:([0-9]+)\\s*mo[a-z]*[,\\s]*)?" + "(?:([0-9]+)\\s*w[a-z]*[,\\s]*)?" + "(?:([0-9]+)\\s*d[a-z]*[,\\s]*)?" + "(?:([0-9]+)\\s*h[a-z]*[,\\s]*)?" + "(?:([0-9]+)\\s*m[a-z]*[,\\s]*)?" + "(?:([0-9]+)\\s*(?:s[a-z]*)?)?", Pattern.CASE_INSENSITIVE);
+    private static final Pattern ONLINE_DURATION = Pattern.compile("([0-9]+)([smhdw])", Pattern.CASE_INSENSITIVE);
     private static final int maxYears = 100000;
 
     private DateUtil() {
+    }
+
+    /** Parses a single exact duration for online-time counters, without calendar months or years. */
+    public static long parseOnlineDurationTicks(final String input) {
+        if (input == null) {
+            throw new IllegalArgumentException("Duration is missing");
+        }
+        final Matcher matcher = ONLINE_DURATION.matcher(input);
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("Invalid duration: " + input);
+        }
+        final long amount = Long.parseLong(matcher.group(1));
+        final long seconds;
+        switch (matcher.group(2).toLowerCase(Locale.ROOT)) {
+            case "s": seconds = amount; break;
+            case "m": seconds = Math.multiplyExact(amount, 60L); break;
+            case "h": seconds = Math.multiplyExact(amount, 3600L); break;
+            case "d": seconds = Math.multiplyExact(amount, 86400L); break;
+            case "w": seconds = Math.multiplyExact(amount, 604800L); break;
+            default: throw new IllegalArgumentException("Invalid duration unit");
+        }
+        if (seconds <= 0) {
+            throw new IllegalArgumentException("Duration must be positive");
+        }
+        return Math.multiplyExact(seconds, 20L);
     }
 
     public static String removeTimePattern(final String input) {
